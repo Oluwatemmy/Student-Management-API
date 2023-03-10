@@ -3,9 +3,10 @@ from flask import request
 from flask_restx import Namespace, Resource, fields
 from ..models.user import User, Student, Admin, Lecturer
 from ..utils import db, generate_random_string, send_email, generate_reset_token
+from ..utils.blocklist import BLOCKLIST
 from werkzeug.security import generate_password_hash, check_password_hash
 from http import HTTPStatus
-from flask_jwt_extended import create_access_token, create_refresh_token, jwt_required, get_jwt_identity, unset_jwt_cookies
+from flask_jwt_extended import create_access_token, create_refresh_token, jwt_required, get_jwt_identity, get_jwt
 from .serializers_utils import login_field, password_reset_field, pasword_reset_request_field, signup_field
 
 auth_namespace = Namespace('auth', description="Namespace for Authentication")
@@ -135,16 +136,17 @@ class Logout(Resource):
     @jwt_required()
     def post(self):
         """
-            Log the User Out
+            Log the User Out by revoking Access/refresh token
         """
-        unset_jwt_cookies
-        db.session.commit()
+        token = get_jwt()
+        jti = token['jti']
+        token_type = token['type']
+        # user_identity = get_jwt_identity()
+        BLOCKLIST.add(jti)
 
-        response = {
-            'message': 'Logout Successful'
-        }
-
-        return response, HTTPStatus.OK
+        return {
+            'message': 'Successfully logged out and token revoked successfully.'
+        }, HTTPStatus.OK
     
 
 @auth_namespace.route('/password-reset-request')
@@ -164,23 +166,18 @@ class PasswordResetRequest(Resource):
             return {
                 'message': 'User does not exist'
             }, HTTPStatus.NOT_FOUND
-        try:
-            if user:
-                user.password_reset_token = generate_reset_token(25)
-                db.session.commit()
+        if user:
+            token = generate_reset_token(25)
+            user.password_reset_token = token
+            db.session.commit()
 
-                # Send a password reset email
-                send_email(user, generate_reset_token(25))
+            # Send a password reset email
+            send_email(user, token)
 
-                return {
-                    'message': 'Password reset token generated successfully. Please check your mail!'
-                }, HTTPStatus.OK
-        except:
-            db.session.rollback()
             return {
-                'message': 'Something went wrong'
-            }, HTTPStatus.INTERNAL_SERVER_ERROR
-        
+                'message': 'Password reset token generated successfully. Please check your mail!'
+            }, HTTPStatus.OK
+    
 
 @auth_namespace.route('/password-reset/<token>')
 class PasswordReset(Resource):
@@ -202,7 +199,8 @@ class PasswordReset(Resource):
             }, HTTPStatus.BAD_REQUEST
 
         if password == confirm_password:
-            user.set_password(confirm_password)
+            hashed_password = generate_password_hash(confirm_password)
+            user.password_hash = hashed_password
             user.password_reset_token = None
             db.session.commit()
 

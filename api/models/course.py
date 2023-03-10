@@ -66,7 +66,9 @@ class Score(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
     student_id = db.Column(db.Integer(), db.ForeignKey('students.id'))
     course_id = db.Column(db.Integer(), db.ForeignKey('courses.id'))
-    score = db.Column(db.Integer(), nullable=False)
+    score = db.Column(db.Float, nullable=False)
+    percent = db.Column(db.String(10), nullable=True)
+    gpa = db.Column(db.Float)
     created_at = db.Column(db.DateTime() , nullable=False , default=datetime.utcnow)
 
     def __init__(self, student_id, course_id, score):
