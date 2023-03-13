@@ -21,7 +21,7 @@ class User(db.Model):
     }
 
     def __repr__(self):
-        return f"User('{self.username}', '{self.email}')"
+        return f"User('{self.name}', '{self.email}')"
 
     def save(self):
         db.session.add(self)
@@ -34,19 +34,6 @@ class User(db.Model):
     @classmethod
     def get_by_id(cls, id):
         return cls.query.get_or_404(id)
-    
-    def get_reset_token(self, expires_sec=1800):
-        s = Serializer(config('SECRET_KEY'), expires_sec)
-        return s.dumps({'user_id': self.id}).decode('utf-8')
-
-    @staticmethod
-    def verify_reset_token(token):
-        s = Serializer(config('SECRET_KEY'))
-        try:
-            user_id = s.loads(token)['user_id']
-        except:
-            return None
-        return User.query.get(user_id)
     
 
 class Admin(User):

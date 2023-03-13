@@ -80,13 +80,27 @@ def letter_grade_to_gpa(letter_grade):
 
 
 def grade(score):
-    if score >= 80:
+    if score >= 95:
+        return 'A+'
+    elif score >= 90:
         return 'A'
-    elif score >= 70:
+    elif score >= 85:
+        return 'A-'
+    elif score >= 80:
+        return 'B+'
+    elif score >= 75:
         return 'B'
+    elif score >= 70:
+        return 'B-'
+    elif score >= 65:
+        return 'C+'
     elif score >= 60:
         return 'C'
+    elif score >= 55:
+        return 'C-'
     elif score >= 50:
+        return 'D+'
+    elif score >= 45:
         return 'D'
     else:
         return 'F'

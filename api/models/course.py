@@ -10,6 +10,9 @@ class Course(db.Model):
     lecturer_id = db.Column(db.Integer, db.ForeignKey('lecturers.id'))
     created_at = db.Column(db.DateTime() , nullable=False , default=datetime.utcnow)
 
+    def __repr__(self):
+        return f"Course('{self.name}', '{self.course_code}')"
+
     def save(self):
         db.session.add(self)
         db.session.commit()
@@ -71,10 +74,11 @@ class Score(db.Model):
     gpa = db.Column(db.Float)
     created_at = db.Column(db.DateTime() , nullable=False , default=datetime.utcnow)
 
-    def __init__(self, student_id, course_id, score):
+    def __init__(self, student_id, course_id, score, percent):
         self.student_id = student_id
         self.course_id = course_id
         self.score = score
+        self.percent = percent
         
     def save(self):
         db.session.add(self)

@@ -1,6 +1,6 @@
 from datetime import datetime
 from flask import request
-from flask_restx import Namespace, Resource, fields
+from flask_restx import Namespace, Resource
 from ..models.user import User, Student, Admin, Lecturer
 from ..utils import db, generate_random_string, send_email, generate_reset_token
 from ..utils.blocklist import BLOCKLIST
@@ -112,7 +112,6 @@ class Login(Resource):
         }
 
         return response, HTTPStatus.OK
-
 
 
 @auth_namespace.route('/refresh')

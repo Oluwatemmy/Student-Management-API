@@ -3,6 +3,7 @@ from flask_restx import Api
 from flask_migrate import Migrate
 from .auth.views import auth_namespace
 from .student.views import student_namespace
+from .courses.views import courses_namespace
 from .config.config import config_dict
 from .utils import db
 from .utils.blocklist import BLOCKLIST
@@ -42,7 +43,7 @@ def create_app(config=config_dict['dev']):
 
     api.add_namespace(auth_namespace, path='/auth')
     api.add_namespace(student_namespace, path='/students')
-    # api.add_namespace(courses_namespace, path='/courses')
+    api.add_namespace(courses_namespace, path='/courses')
 
     @app.errorhandler(NotFound)
     def handle_not_found(error):
