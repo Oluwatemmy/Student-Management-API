@@ -1,12 +1,13 @@
 from flask import request
-from flask_restx import Namespace, Resource, fields
-from ..models.user import Student, User, Admin
+from flask_restx import Namespace, Resource
+from ..models.user import Student
 from ..models.course import Course, StudentCourse, Score
 from ..utils import db, letter_grade_to_gpa, grade
 from http import HTTPStatus
-from flask_jwt_extended import jwt_required, get_jwt_identity
-from .serializers_utils import student_model, student_score_model, course_model, course_retrieve_model, update_student_model
-from functools import wraps
+from flask_jwt_extended import jwt_required
+from .serializers_utils import student_model, student_score_model, course_model, course_retrieve_model, update_student_model, gpa_model
+from ..decorators import admin_required, lecturer_required, student_required, admin_or_lecturer_required
+
 
 student_namespace = Namespace('students', description='Students related operations')
 
@@ -20,18 +21,18 @@ course_field = student_namespace.model("Course List Model", course_model)
 
 course_retrieve_field = student_namespace.model("Course Retrieve Model", course_retrieve_model)
 
-gpa_field = student_namespace.model(
-    "GPA Model", {
-        'name': fields.String(required=True, description="Student Name"),
-        'gpa': fields.Float(required=True, description="GPA"),
-        'grade': fields.String(required=True, description="Grade")
-    }
-)
+gpa_field = student_namespace.model("GPA Model", gpa_model)
 
-@student_namespace.route('/student')
+@student_namespace.route('/')
 class GetStudentList(Resource):
     @student_namespace.marshal_with(student_field)
-    @jwt_required()
+    @student_namespace.doc(
+        description="""
+            Only admin can access this endpoint
+            This returns all the students in the academy
+        """
+    )
+    @admin_required()
     def get(self):
         """
             Get all students
@@ -39,18 +40,20 @@ class GetStudentList(Resource):
         students = Student.query.all()
         return students , HTTPStatus.OK
 
-@student_namespace.route('/student/<int:student_id>')
+@student_namespace.route('/<int:student_id>')
 class GetUpdateDeleteStudent(Resource):
     @student_namespace.marshal_with(student_field)
-    @jwt_required()
+    @student_namespace.doc(
+        description="""
+            Only admins and lecturers can access this route
+            This allow the retrieval of a particular student 
+        """
+    )
+    @admin_or_lecturer_required()
     def get(self, student_id):
         """
             Get a student by ID
         """
-        # authenticated_user_id = get_jwt_identity() 
-        # admin = Admin.query.filter_by(id=authenticated_user_id).first()   
-        # if not admin :
-        #     return {'message':'You are not authorized to the endpoint'}, HTTPStatus.UNAUTHORIZED
         student = Student.query.filter_by(id=student_id).first()
         if not student:
             return {'message': 'Student not found'}, HTTPStatus.NOT_FOUND
@@ -59,15 +62,17 @@ class GetUpdateDeleteStudent(Resource):
     
     @student_namespace.expect(update_student_field)
     @student_namespace.marshal_with(student_field)
-    @jwt_required()
+    @student_namespace.doc(
+        description="""
+            Only admins and lecturers can access this route
+            This allow the update of a particular student
+        """
+    )
+    @admin_or_lecturer_required()
     def put(self, student_id):
         """
             Update a student by ID
         """
-        # authenticated_user_id = get_jwt_identity() 
-        # student = Student.query.filter_by(id=authenticated_user_id).first()   
-        # if not student :
-        #     return {'message':'You are not authorized to the endpoint'}, HTTPStatus.UNAUTHORIZED
         student = Student.query.filter_by(id=student_id).first()
         if not student:
             return {'message': 'Student not found'}, HTTPStatus.NOT_FOUND
@@ -77,15 +82,17 @@ class GetUpdateDeleteStudent(Resource):
         student.save()
         return student, HTTPStatus.OK
     
-    @jwt_required()
+    @student_namespace.doc(
+        description="""
+            Only admins and lecturers can access this route
+            This allow the deletion of a particular student from the academy
+        """
+    )
+    @admin_required()
     def delete(self, student_id):
         """
             Delete a student by ID
         """
-        # authenticated_user_id = get_jwt_identity() 
-        # admin = Admin.query.filter_by(id=authenticated_user_id).first()   
-        # if not admin :
-        #     return {'message':'You are not authorized to the endpoint'}, HTTPStatus.UNAUTHORIZED
         student = Student.query.filter_by(id=student_id).first()
         if not student:
             return {'message': 'Student not found'}, HTTPStatus.NOT_FOUND
@@ -93,10 +100,16 @@ class GetUpdateDeleteStudent(Resource):
         return {'message': 'Student deleted from academy successfully'}, HTTPStatus.OK
     
 
-@student_namespace.route('/student/<int:student_id>/courses')
+@student_namespace.route('/<int:student_id>/courses')
 class GetStudentCourses(Resource):
     @student_namespace.marshal_with(course_field)
-    @jwt_required()
+    @student_namespace.doc(
+        description="""
+            Only admins and lecturers can access this route
+            This allow the retrieval of a particular student courses
+        """
+    )
+    @admin_or_lecturer_required()
     def get(self, student_id):
         """
             Get a student courses by ID
@@ -107,88 +120,32 @@ class GetStudentCourses(Resource):
         
         student_courses = StudentCourse.get_courses_by_student_id(student_id)
         return student_courses, HTTPStatus.OK
-    
-
-@student_namespace.route('/addcourse/<int:course_id>')
-class CreateDeleteStudentCourse(Resource):
-    # @student_namespace.marshal_with(course_retrieve_field)
-    @student_namespace.expect(course_field)
-    @jwt_required()
-    def post(self, course_id):
-        """
-            Register a Student for a course 
-        """
-        data = request.get_json()
-        student_id = data.get('student_id')
-        student = Student.query.filter_by(id=student_id).first()
-        course = Course.query.filter_by(id=course_id).first()
-        if not student or not course:
-            return {
-                'message': "Student or Course not found"
-            }, HTTPStatus.NOT_FOUND
-        
-        if student:
-            student_course = StudentCourse.query.filter_by(student_id=student.id, course_id=course.id).first()
-            if student_course:
-                return {
-                    'message': "{} has already registered for this course".format(student.name)
-                }, HTTPStatus.OK
-            else:
-                student_course = StudentCourse(student_id=student.id, course_id=course.id)
-                student_course.save()
-                return {
-                    'message': "{} registered for the {} course successfully".format(student.name, course.name)
-                }, HTTPStatus.CREATED
-        
-    # @student_namespace.expect(course_field)
-    @jwt_required()
-    def delete(self, course_id):
-        """
-            Delete a Student course
-        """
-        data = request.get_json()
-        student_id = data.get('student_id')
-        student = Student.query.filter_by(id=student_id).first()
-        course = Course.query.filter_by(id=course_id).first()
-        if not student or not course:
-            return {
-                'message': "Student or Course not found"
-            }, HTTPStatus.NOT_FOUND
-        
-        if student:
-            student_course = StudentCourse.query.filter_by(student_id=student.id, course_id=course.id).first()
-            if not student_course:
-                return {
-                    'message': "{} has not registered for this course".format(student.name)
-                }, HTTPStatus.OK
-            else:
-                student_course.delete()
-                return {
-                    'message': "{} removed from the {} course".format(student.name, course.name)
-                }, HTTPStatus.OK
                 
 
 @student_namespace.route('/studentcourse/score/<int:course_id>')
 class UpdateStudentCourseScore(Resource):
     @student_namespace.expect(student_score_field)
-    @jwt_required()
+    @student_namespace.doc(
+        description="""
+            Only course lecturer can access this route
+            This allow the update of a particular student score in a course
+        """
+    )
+    @lecturer_required()
     def put(self, course_id):
         """
             Update a Student course score by the Course Lecturer
         """
-        authenticated_user_id = get_jwt_identity()
         data = request.get_json()
         student_id = data.get('student_id')
         score_value = data.get('score')
-        teacher = User.query.filter_by(id=authenticated_user_id).first()   
+        
         # check if student and course exist
         student = Student.query.filter_by(id=student_id).first()
         course = Course.query.filter_by(id=course_id).first()
         if not student or not course:
             return {'message': 'Student or course not found'}, HTTPStatus.NOT_FOUND
-        #  check if teacher is the course teacher
-        # if course.lecturer_id != teacher.id :
-        #     return {'message':'You cannot add score for this student in this course'}, HTTPStatus.UNAUTHORIZED
+
         # check if student is registered for the course
         student_in_course = StudentCourse.query.filter_by(course_id=course.id, student_id=student.id).first() 
         if student_in_course:
@@ -210,10 +167,16 @@ class UpdateStudentCourseScore(Resource):
         return {'message': 'The student is not registered for this course'}, HTTPStatus.BAD_REQUEST
         
 
-@student_namespace.route('/student/<int:student_id>/gpa')
+@student_namespace.route('/<int:student_id>/gpa')
 class GetStudentGPA(Resource):
     @student_namespace.marshal_with(gpa_field)
-    @jwt_required()
+    @student_namespace.doc(
+        description="""
+            Only admins and lecturers can access this route
+            This allow the calculation of a particular student GPA
+        """
+    )
+    @admin_or_lecturer_required()
     def get(self, student_id):
         """
             Calculate a Student GPA
@@ -223,6 +186,7 @@ class GetStudentGPA(Resource):
             return {'message': 'Student not found'}, HTTPStatus.NOT_FOUND
         
         if student:
+            
             # Calculate the gpa here
             student_courses = StudentCourse.get_courses_by_student_id(student_id)
             if not student_courses:
@@ -234,13 +198,3 @@ class GetStudentGPA(Resource):
             score.gpa = round(gpa, 2)
             db.session.commit()
             return score, HTTPStatus.OK
-            
-            
-            
-            # gpa = 0
-            # for course in student_courses:
-            #     gpa += course.percent
-            # gpa = gpa / len(student_courses)
-            # return {
-            #     'gpa': gpa
-            # }, HTTPStatus.OK

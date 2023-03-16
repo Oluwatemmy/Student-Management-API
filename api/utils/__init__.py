@@ -1,14 +1,16 @@
-from flask_sqlalchemy import SQLAlchemy
 import secrets
 import string
 import smtplib
 from email.mime.text import MIMEText
+from flask_sqlalchemy import SQLAlchemy
 from email.mime.multipart import MIMEMultipart
 
 db = SQLAlchemy()
 
+
 def generate_reset_token(length):
     return secrets.token_hex(length)
+
 
 def generate_random_string(length):
     """
@@ -17,6 +19,7 @@ def generate_random_string(length):
     characters = string.ascii_letters + string.digits
     random_string = ''.join(secrets.choice(characters) for _ in range(length))
     return random_string
+
 
 def send_email(user_mail, token):
     """
@@ -45,6 +48,33 @@ def send_email(user_mail, token):
     server.login(sender_email, password)
     server.sendmail(sender_email, user_mail.email, text)
     server.quit()
+
+
+def grade(score):
+    if score >= 95:
+        return 'A+'
+    elif score >= 90:
+        return 'A'
+    elif score >= 85:
+        return 'A-'
+    elif score >= 80:
+        return 'B+'
+    elif score >= 75:
+        return 'B'
+    elif score >= 70:
+        return 'B-'
+    elif score >= 65:
+        return 'C+'
+    elif score >= 60:
+        return 'C'
+    elif score >= 55:
+        return 'C-'
+    elif score >= 50:
+        return 'D+'
+    elif score >= 45:
+        return 'D'
+    else:
+        return 'F'
 
 
 def letter_grade_to_gpa(letter_grade):
@@ -77,30 +107,3 @@ def letter_grade_to_gpa(letter_grade):
         return 0.0
     else:
         return None
-
-
-def grade(score):
-    if score >= 95:
-        return 'A+'
-    elif score >= 90:
-        return 'A'
-    elif score >= 85:
-        return 'A-'
-    elif score >= 80:
-        return 'B+'
-    elif score >= 75:
-        return 'B'
-    elif score >= 70:
-        return 'B-'
-    elif score >= 65:
-        return 'C+'
-    elif score >= 60:
-        return 'C'
-    elif score >= 55:
-        return 'C-'
-    elif score >= 50:
-        return 'D+'
-    elif score >= 45:
-        return 'D'
-    else:
-        return 'F'

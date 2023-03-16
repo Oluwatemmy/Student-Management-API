@@ -14,16 +14,13 @@ update_student_model = {
     'email': fields.String(required=True, description="Email of the Student")
 }
 
-
 student_score_model = {
     'student_id': fields.Integer(required=False, description='ID of student'),
-    # 'course_id': fields.Integer(required=True, description='ID of course'),
     'score': fields.Integer(required=True, description="Score value"),
 }
 
-
 course_model = {
-    'student_id': fields.String(required=True),
+    'student_id': fields.Integer(required=True),
 }
 
 course_retrieve_model =  {
@@ -36,20 +33,23 @@ course_retrieve_model =  {
 
 create_course_model = {
     'name': fields.String(required=True, description="A course name"),
-    # 'course_code': fields.String(description="A course code"),
     'lecturer_id': fields.Integer(required=True, description="Course Lecturer ID")
 }
 
 student_register_for_course_model = {
     'student_id': fields.Integer(required=True, description='ID of student'),
-    # 'course_id': fields.Integer(required=True, description='ID of course')
 }
 
 course_lecturer_model = {
     'username': fields.String(required=True, description='Username of the Lecturer'),
     'email': fields.String(required=True, description='Lecturer email address'),
     'Name': fields.String(required=True, description="Name of the Lecturer"),
-    # 'Lecturer_id': fields.String(required=True, description="Lecturer ID"),
     'staff_no': fields.String(required=True, description="COurse Lecturer ID"),
     'created_at': fields.DateTime( description="Course creation date")
+}
+
+gpa_model = {
+    'name': fields.String(required=True, description="Student Name"),
+    'gpa': fields.Float(required=True, description="GPA"),
+    'grade': fields.String(required=True, description="Grade")
 }

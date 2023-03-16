@@ -1,7 +1,6 @@
 from ..utils import db
 from datetime import datetime
-from decouple import config
-from itsdangerous import TimedSerializer as Serializer
+
 
 class User(db.Model):
     __tablename__ = 'users'

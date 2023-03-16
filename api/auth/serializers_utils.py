@@ -7,6 +7,13 @@ signup_field = {
     'password': fields.String(required=True, description='Password of the User')
 }
 
+
+lecturer_signup_field = {
+    'name': fields.String(required=True, description='Name of the User'),
+    'email': fields.String(required=True, description='User email address'),
+    'password': fields.String(required=True, description='Password of the User')
+}
+
 login_field = {
     'email': fields.String(required=True, description='User email address'),
     'password': fields.String(required=True, description='Password of the User')
