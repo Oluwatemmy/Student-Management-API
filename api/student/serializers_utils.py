@@ -49,7 +49,8 @@ course_lecturer_model = {
 }
 
 gpa_model = {
-    'name': fields.String(required=True, description="Student Name"),
+    'student_id': fields.String(required=True, description="Student Name"),
     'gpa': fields.Float(required=True, description="GPA"),
-    'grade': fields.String(required=True, description="Grade")
+    'score': fields.String(required=True, description="Grade"),
+    'percent': fields.String(required=True, description="Percentage")
 }

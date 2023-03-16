@@ -1,8 +1,8 @@
 from flask import request
 from flask_restx import Resource, Namespace
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from ..models.user import Lecturer, Student
-from ..models.course import Course, StudentCourse
+from ..models.course import Course, StudentCourse, Score
 from ..utils import db
 from http import HTTPStatus
 from ..utils import generate_random_string

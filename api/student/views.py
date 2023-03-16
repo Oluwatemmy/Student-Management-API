@@ -1,5 +1,5 @@
 from flask import request
-from flask_restx import Namespace, Resource
+from flask_restx import Namespace, Resource, fields
 from ..models.user import Student
 from ..models.course import Course, StudentCourse, Score
 from ..utils import db, letter_grade_to_gpa, grade
@@ -102,7 +102,7 @@ class GetUpdateDeleteStudent(Resource):
 
 @student_namespace.route('/<int:student_id>/courses')
 class GetStudentCourses(Resource):
-    @student_namespace.marshal_with(course_field)
+    @student_namespace.marshal_with(course_retrieve_field)
     @student_namespace.doc(
         description="""
             Only admins and lecturers can access this route
@@ -167,34 +167,82 @@ class UpdateStudentCourseScore(Resource):
         return {'message': 'The student is not registered for this course'}, HTTPStatus.BAD_REQUEST
         
 
-@student_namespace.route('/<int:student_id>/gpa')
+@student_namespace.route('/<int:student_id>/<int:course_id>/gpa')
 class GetStudentGPA(Resource):
     @student_namespace.marshal_with(gpa_field)
     @student_namespace.doc(
         description="""
             Only admins and lecturers can access this route
-            This allow the calculation of a particular student GPA
+            This allow the calculation of a particular student course GPA
         """
     )
     @admin_or_lecturer_required()
-    def get(self, student_id):
+    def get(self, student_id, course_id):
         """
-            Calculate a Student GPA
+            Calculate a Student Course GPA
         """
         student = Student.query.filter_by(id=student_id).first()
-        if not student:
-            return {'message': 'Student not found'}, HTTPStatus.NOT_FOUND
+        course = Course.query.filter_by(id=course_id).first()
+        if not student or not course:
+            return {'message': 'Student or course not found'}, HTTPStatus.NOT_FOUND
         
         if student:
-            
             # Calculate the gpa here
             student_courses = StudentCourse.get_courses_by_student_id(student_id)
             if not student_courses:
                 return {'message': 'Student not registered for any course'}, HTTPStatus.NOT_FOUND
             
-            score = Score.query.filter_by(student_id=student_id).first()
+            score = Score.query.filter_by(student_id=student_id, course_id=course_id).first()
             grades = score.percent.split(",")
             gpa = sum(letter_grade_to_gpa(grade) for grade in grades) / len(grades)
             score.gpa = round(gpa, 2)
             db.session.commit()
             return score, HTTPStatus.OK
+            
+
+
+@student_namespace.route('/<int:student_id>/courses/grades')
+class GetStudentCoursesGrades(Resource):
+
+    @student_namespace.doc(
+        description="""
+            Only admins and lecturers can access this route
+            This allow the retrieval of a particular student courses and grades
+        """
+    )
+    @admin_or_lecturer_required()
+    def get(self, student_id):
+        """
+            Get a student all courses and grades by ID
+        """
+        student = Student.query.filter_by(id=student_id).first()
+        if not student:
+            return {'message': 'Student not found'}, HTTPStatus.NOT_FOUND
+        
+        student_courses = StudentCourse.get_courses_by_student_id(student_id)
+        if not student_courses:
+            return {'message': 'Student not registered for any course'}, HTTPStatus.NOT_FOUND
+        
+        student_courses_grades = []
+        for student_course in student_courses:
+            course = Course.query.filter_by(id=student_course.id).first()
+            score = Score.query.filter_by(student_id=student_id, course_id=student_course.id).first()
+            if score:
+                student_courses_grades.append({
+                    'course_id': course.id,
+                    'course_name': course.name,
+                    'course_code': course.course_code,
+                    'course_score': score.score,
+                    'course_gpa': score.gpa,
+                    'course_percent': score.percent
+                })
+            else:
+                student_courses_grades.append({
+                    'course_id': course.id,
+                    'course_name': course.name,
+                    'course_code': course.course_code,
+                    'course_score': 'Not yet graded',
+                    'course_gpa': 'Not yet graded',
+                    'course_percent': 'Not yet graded'
+                })
+        return student_courses_grades, HTTPStatus.OK
