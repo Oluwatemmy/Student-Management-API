@@ -25,8 +25,8 @@ def send_email(user_mail, token):
     """
     Sends a password reset email to the specified email address.
     """
-    sender_email = "temmyghold00@gmail.com"
-    password = "iceksvttjftmlwat"
+    sender_email = "temmyvibez15@gmail.com"
+    password = "lghbvsjfldnzitym"
     subject = "Password Reset Request"
     message = f""" 
     Hi {user_mail.name},

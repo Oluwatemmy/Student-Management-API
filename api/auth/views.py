@@ -140,8 +140,6 @@ class SignUpLecturer(Resource):
         }
 
 
-
-
 @auth_namespace.route('/login')
 class Login(Resource):
     @auth_namespace.expect(login_model)
