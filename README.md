@@ -247,7 +247,7 @@ python app.py
 
 <br />
 
-[![Student Management API Screenshot][student-management-api-screenshot]](https://github.com/Oluwatemmy/Student-Management-API/blob/main/images/Ze_School_Full_Page.png)
+[![Student Management API Screenshot][student-management-api-screenshot]](https://github.com/Oluwatemmy/Student-Management-API/blob/main/images/student_api_full_page.png)
 
 <br/>
 
@@ -258,7 +258,7 @@ python app.py
 <!-- License -->
 ## License
 
-Distributed under the MIT License. See <a href="https://github.com/Ze-Austin/ze-school/blob/main/LICENSE">LICENSE</a> for more information.
+Distributed under the MIT License. See <a href="https://github.com/Oluwatemmy/Student-Management-API/blob/main/LICENSE">LICENSE</a> for more information.
 
 <p align="right"><a href="#readme-top">back to top</a></p>
 
@@ -302,7 +302,7 @@ This project was made possible by:
 [license-url]: https://github.com/Oluwatemmy/Student-Management-API/blob/main/LICENSE
 [twitter-shield]: https://img.shields.io/badge/-@Oluwatemmy15-1ca0f1?style=for-the-badge&logo=twitter&logoColor=white&link=https://twitter.com/ze_austin
 [twitter-url]: https://twitter.com/Oluwatemmy15
-[student-management-api-screenshot]: https://github.com/Oluwatemmy/Student-Management-API/blob/main/images/Ze_School_Full_Page.png
+[student-management-api-screenshot]: https://github.com/Oluwatemmy/Student-Management-API/blob/main/images/student_api_full_page.png
 [python]: https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54
 [flask]: https://img.shields.io/badge/flask-%23000.svg?style=for-the-badge&logo=flask&logoColor=white
 [sqlite]: https://img.shields.io/badge/sqlite-%2307405e.svg?style=for-the-badge&logo=sqlite&logoColor=white
