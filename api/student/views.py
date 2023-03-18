@@ -1,12 +1,11 @@
 from flask import request
-from flask_restx import Namespace, Resource, fields
+from flask_restx import Namespace, Resource
 from ..models.user import Student
 from ..models.course import Course, StudentCourse, Score
 from ..utils import db, letter_grade_to_gpa, grade
 from http import HTTPStatus
-from flask_jwt_extended import jwt_required
 from .serializers_utils import student_model, student_score_model, course_model, course_retrieve_model, update_student_model, gpa_model
-from ..decorators import admin_required, lecturer_required, student_required, admin_or_lecturer_required
+from ..decorators import admin_required, lecturer_required, admin_or_lecturer_required
 
 
 student_namespace = Namespace('students', description='Students related operations')
@@ -84,7 +83,7 @@ class GetUpdateDeleteStudent(Resource):
     
     @student_namespace.doc(
         description="""
-            Only admins and lecturers can access this route
+            Only admins can access this route
             This allow the deletion of a particular student from the academy
         """
     )
@@ -198,7 +197,6 @@ class GetStudentGPA(Resource):
             score.gpa = round(gpa, 2)
             db.session.commit()
             return score, HTTPStatus.OK
-            
 
 
 @student_namespace.route('/<int:student_id>/courses/grades')

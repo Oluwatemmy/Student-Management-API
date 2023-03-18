@@ -29,6 +29,8 @@ class SignUp(Resource):
         description="""
             Every user can access this to register
             It allows the creation of a student account
+            "user-type": "admin"  --- To create an admin account
+            "user-type": "student" --- To create a student account
         """
     )
     def post(self):

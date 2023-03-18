@@ -7,7 +7,7 @@ from ..utils import db
 from http import HTTPStatus
 from ..utils import generate_random_string
 from ..student.serializers_utils import student_model, course_retrieve_model, create_course_model, student_register_for_course_model, course_lecturer_model, course_model
-from ..decorators import admin_required, lecturer_required, student_required, admin_or_lecturer_required
+from ..decorators import admin_required, lecturer_required, admin_or_lecturer_required
 
 
 courses_namespace = Namespace('courses', description="Namespace for course")
@@ -85,6 +85,7 @@ class GetDeleteCourse(Resource):
             This returns a course by id
         """
     )
+    @jwt_required()
     def get(self, course_id):
         """Get a course by ID"""
         course = Course.get_by_id(course_id)
@@ -119,7 +120,7 @@ class CourseStudents(Resource):
     @courses_namespace.marshal_with(student_field)
     @courses_namespace.doc(
         description="""
-            Every user can access this endpoint
+            Only admin and lecturers can access this endpoint
             This returns all the students in a course
         """
     )

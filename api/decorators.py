@@ -1,5 +1,4 @@
 from flask_jwt_extended import get_jwt, verify_jwt_in_request
-from flask import jsonify
 from functools import wraps
 from .models.user import User
 from http import HTTPStatus
