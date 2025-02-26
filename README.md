@@ -269,7 +269,7 @@ Distributed under the MIT License. See <a href="https://github.com/Oluwatemmy/St
 
 You can contact me with my social media handles:
 
-[LinkedIn](https://www.linkedin.com/in/oluwatemmy15) | [Twitter](https://twitter.com/Oluwatemmy15) | [Github](https://github.com/Oluwatemmy) | Email: oluwaseyitemitope456@gmail.com
+[LinkedIn](https://www.linkedin.com/in/aotem11) | [Twitter](https://twitter.com/Oluwatemmy15) | [Github](https://github.com/Oluwatemmy) | Email: oluwaseyitemitope456@gmail.com
 
 Project Link: [Student Management API](https://github.com/Oluwatemmy/Student-Management-API)
 
